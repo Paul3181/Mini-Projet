@@ -81,6 +81,31 @@ public class DAO {
 		}
 		return result;
 	}
+        
+        /**
+         * Methode permettant de valider ou non les informations de connexion
+         * transmises par le formulaire de login
+         * @param email
+         * @param pass
+         * @return
+         * @throws SQLException 
+         */
+        public boolean checkUser(String email, String pass) throws SQLException{
+            
+            boolean check = false;
+            
+            String sql = "SELECT * FROM CUSTOMER WHERE EMAIL=? AND CUSTOMER_ID=?";
+            try (Connection connection = myDataSource.getConnection(); 
+		     PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, email);
+                stmt.setString(2, pass);
+                ResultSet res = stmt.executeQuery();
+                //check est vrai si la requete retourne 1 resultat faux sinon
+                check = res.next();
+            }             
+            return check;
+        }
+                
 
 
 }
