@@ -15,5 +15,6 @@
     </session-config>
     <welcome-file-list>
         <welcome-file>login</welcome-file>
+        <welcome-file>discountEditor</welcome-file>
     </welcome-file-list>
 </web-app>

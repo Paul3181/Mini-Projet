@@ -12,10 +12,12 @@
 		<%--  On montre un éventuel message d'erreur --%>
 		<div><h4>${message}</h4></div>
                 
+                <div><p>Utilisateur : ${utilisateur}</p></div>
+                
                 <div>
                 <h3>Mon panier </h3>
                 <%--<h4>${test}</h4>--%>
-		<table border="1">
+		<table>
                     <tr><th>Products</th><th>Price</th><th>Quantity</th></tr>
                     <tr>
                         <td></td>
