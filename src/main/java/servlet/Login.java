@@ -43,21 +43,34 @@ public class Login extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             DAO dao = new DAO(DataSourceFactory.getDataSource());
             //On recupère les données saisies
-            String email = request.getParameter("email");
-            
+            String email = request.getParameter("email");         
             String pass = request.getParameter("pass");
-            //int pass = Integer.parseInt(request.getParameter("pass"));
-            
-            //on vérifie la validité des paramètres
-            if(email==null){
+           
+            //on vérifie la presence des paramètres
+            if(email==null || pass==null){
                 RequestDispatcher rs = request.getRequestDispatcher("index.html");
                 rs.include(request, response);
             }
-            else{
-                 if(dao.checkUser(email, pass)){
-                RequestDispatcher rs = request.getRequestDispatcher("Client.html");
-                rs.forward(request, response);
-                }
+            
+            //Si les parametres sont définis on regarde leur validité        
+            else{           
+                //On verifie que le mot de passe peut etre parsé
+                if(pass.matches("[0-9]+")){
+                    int pass2 = Integer.parseInt(request.getParameter("pass"));
+                    out.println(pass2);
+                    //si oui on verifie:
+                    if(dao.checkUser(email, pass2)){
+                        RequestDispatcher rs = request.getRequestDispatcher("Client.html");
+                        rs.forward(request, response);
+                    }
+                    //Les informations sont fausses
+                    else{
+                        out.println("Identifiant ou mot de passe incorrect");
+                        RequestDispatcher rs = request.getRequestDispatcher("index.html");
+                        rs.include(request, response);
+                    }
+                } 
+                //Le mot de passe n'est pas du bon format
                 else{
                    out.println("Identifiant ou mot de passe incorrect");
                    RequestDispatcher rs = request.getRequestDispatcher("index.html");

@@ -90,7 +90,7 @@ public class DAO {
          * @return
          * @throws SQLException 
          */
-        public boolean checkUser(String email, String pass) throws SQLException{
+        public boolean checkUser(String email, int pass) throws SQLException{   
             
             boolean check = false;
             
@@ -98,7 +98,7 @@ public class DAO {
             try (Connection connection = myDataSource.getConnection(); 
 		     PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, email);
-                stmt.setString(2, pass);
+                stmt.setInt(2, pass);
                 ResultSet res = stmt.executeQuery();
                 //check est vrai si la requete retourne 1 resultat faux sinon
                 check = res.next();
