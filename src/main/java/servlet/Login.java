@@ -46,6 +46,7 @@ public class Login extends HttpServlet {
             String email = request.getParameter("email");
             
             String pass = request.getParameter("pass");
+
             //int pass = Integer.parseInt(request.getParameter("pass"));
             
             //on vérifie la validité des paramètres
@@ -59,16 +60,22 @@ public class Login extends HttpServlet {
                 rs.forward(request, response);
                 }
                 else{
-                   out.println("Identifiant ou mot de passe incorrect");
-                   RequestDispatcher rs = request.getRequestDispatcher("index.html");
-                   rs.include(request, response);
+                     if(email=="admin" && pass=="master") {
+                        out.println("Connexion administrateur");
+                        RequestDispatcher rs = request.getRequestDispatcher("Admin.jsp");
+                        rs.forward(request, response);
+                }
+                     else{
+                          out.println("Identifiant ou mot de passe incorrect");
+                          RequestDispatcher rs = request.getRequestDispatcher("index.html");
+                          rs.include(request, response);
                 }
             }
                   
            
         }
     }
-
+    }
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
