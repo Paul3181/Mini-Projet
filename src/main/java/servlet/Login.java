@@ -55,7 +55,7 @@ public class Login extends HttpServlet {
             }
             else{
                  if(dao.checkUser(email, pass)){
-                RequestDispatcher rs = request.getRequestDispatcher("Client.html");
+                RequestDispatcher rs = request.getRequestDispatcher("Client.jsp");
                 rs.forward(request, response);
                 }
                 else{
