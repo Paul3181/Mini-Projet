@@ -39,9 +39,17 @@ public class Login extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
-        response.setContentType("text/html;charset=UTF-8");
+            response.setContentType("text/html;charset=UTF-8");
+            String product = request.getParameter("product");
+            String price = request.getParameter("price");
+            
         try (PrintWriter out = response.getWriter()) {
             DAO dao = new DAO(DataSourceFactory.getDataSource());
+                    
+            
+            //On récupère les enregistrements de la table de PRODUCTS
+            request.setAttribute("products", dao.allProducts());
+            
             //On recupère les données saisies
             String email = request.getParameter("email");
             
@@ -49,15 +57,18 @@ public class Login extends HttpServlet {
 
             //int pass = Integer.parseInt(request.getParameter("pass"));
             
+            //On récupère l'email de l'utilisateur           
+            request.setAttribute("utilisateur", email);
+            
             //on vérifie la validité des paramètres
             if(email==null){
                 RequestDispatcher rs = request.getRequestDispatcher("index.html");
                 rs.include(request, response);
             }
             else{
-                 if(dao.checkUser(email, pass)){
-                RequestDispatcher rs = request.getRequestDispatcher("Client.html");
-                rs.forward(request, response);
+                if(dao.checkUser(email, pass)){
+                    RequestDispatcher rs = request.getRequestDispatcher("Clients.jsp");
+                    rs.forward(request, response);
                 }
                 else{
                      if(email=="admin" && pass=="master") {
@@ -71,6 +82,7 @@ public class Login extends HttpServlet {
                           rs.include(request, response);
                 }
             }
+            
                   
            
         }

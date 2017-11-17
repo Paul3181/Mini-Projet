@@ -105,6 +105,29 @@ public class DAO {
             }             
             return check;
         }
+        
+        /**
+	 * Contenu de la table PRODUCTS
+	 * @return Liste des discount codes
+	 * @throws SQLException renvoyées par JDBC
+	 */
+	public List<ProductEntity> allProducts() throws SQLException {
+
+		List<ProductEntity> result = new LinkedList<>();
+
+		String sql = "SELECT * FROM PRODUCT";
+		try (Connection connection = myDataSource.getConnection(); 
+		     PreparedStatement stmt = connection.prepareStatement(sql)) {
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				String product = rs.getString("DESCRIPTION");
+				float price = rs.getFloat("PURCHASE_COST");
+				ProductEntity c = new ProductEntity(product, price);
+				result.add(c);
+			}
+		}
+		return result;
+	}
                 
 
 

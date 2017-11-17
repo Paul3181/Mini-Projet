@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebListener;
 import model.DAO;
 import model.DataSourceFactory;
 import model.DiscountCode;
+import model.ProductEntity;
 import org.apache.derby.tools.ij;
 
 /**
@@ -40,9 +41,12 @@ public class ApplicationListener implements ServletContextListener {
 		try {
 			List<DiscountCode> allCodes = dao.allCodes();
 			Logger.getLogger("login").log(Level.INFO, "Database already exists");
+                        List<ProductEntity> allProducts = dao.allProducts();
+			Logger.getLogger("DiscountEditor").log(Level.INFO, "Database already exists");
 			result = true;
 		} catch (SQLException ex) {
 			Logger.getLogger("login").log(Level.INFO, "Database does not exist");
+                        Logger.getLogger("DiscountEditor").log(Level.INFO, "Database already exists");
 		}
 		return result;
 	}
