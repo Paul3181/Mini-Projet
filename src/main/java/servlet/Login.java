@@ -39,9 +39,17 @@ public class Login extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
-        response.setContentType("text/html;charset=UTF-8");
+            response.setContentType("text/html;charset=UTF-8");
+            String product = request.getParameter("product");
+            String price = request.getParameter("price");
+            
         try (PrintWriter out = response.getWriter()) {
             DAO dao = new DAO(DataSourceFactory.getDataSource());
+                    
+            
+            //On récupère les enregistrements de la table de PRODUCTS
+            request.setAttribute("products", dao.allProducts());
+            
             //On recupère les données saisies
             String email = request.getParameter("email");         
             String pass = request.getParameter("pass");
@@ -60,7 +68,7 @@ public class Login extends HttpServlet {
                     out.println(pass2);
                     //si oui on verifie:
                     if(dao.checkUser(email, pass2)){
-                        RequestDispatcher rs = request.getRequestDispatcher("Client.html");
+                        RequestDispatcher rs = request.getRequestDispatcher("Clients.jsp");
                         rs.forward(request, response);
                     }
                     //Les informations sont fausses
@@ -72,16 +80,23 @@ public class Login extends HttpServlet {
                 } 
                 //Le mot de passe n'est pas du bon format
                 else{
-                   out.println("Identifiant ou mot de passe incorrect");
-                   RequestDispatcher rs = request.getRequestDispatcher("index.html");
-                   rs.include(request, response);
+                     if(email=="admin" && pass=="master") {
+                        out.println("Connexion administrateur");
+                        RequestDispatcher rs = request.getRequestDispatcher("Admin.jsp");
+                        rs.forward(request, response);
+                }
+                     else{
+                          out.println("Identifiant ou mot de passe incorrect");
+                          RequestDispatcher rs = request.getRequestDispatcher("index.html");
+                          rs.include(request, response);
                 }
             }
+            
                   
            
         }
     }
-
+    }
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
