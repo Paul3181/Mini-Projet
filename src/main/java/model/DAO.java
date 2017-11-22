@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 
@@ -90,20 +92,57 @@ public class DAO {
          * @return
          * @throws SQLException 
          */
-        public boolean checkUser(String email, int pass) throws SQLException{   
+        public void checkUser(HttpServletRequest request) throws SQLException{   
             
-            boolean check = false;
-            
-            String sql = "SELECT * FROM CUSTOMER WHERE EMAIL=? AND CUSTOMER_ID=?";
-            try (Connection connection = myDataSource.getConnection(); 
-		     PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, email);
-                stmt.setInt(2, pass);
-                ResultSet res = stmt.executeQuery();
-                //check est vrai si la requete retourne 1 resultat faux sinon
-                check = res.next();
-            }             
-            return check;
+   
+                String sql = "SELECT * FROM CUSTOMER WHERE EMAIL=? AND CUSTOMER_ID=?";
+                
+                try (Connection connection = myDataSource.getConnection(); 
+                         PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    boolean check = false;
+                    //On recupere les parametres
+                    String email = request.getParameter("email");
+                    String pass = request.getParameter("pass");
+                    int pass2 = 0;
+                    //On verifie la validité
+                    
+                    //parametres incomplet
+                    if(email==null || pass==null){
+                        request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
+                    }
+                    
+                    //on cast le mot de passe si on peut
+                    if(pass.matches("[0-9]+")){
+                        pass2 = Integer.parseInt(pass);
+                    }
+                    //sinon on test si c'est un admin
+                    else{
+                        if(email=="admin" && pass=="master") {
+                            HttpSession session = request.getSession(true);
+                            session.setAttribute("userName", email);
+                        }
+                        else{
+                            request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
+                        }
+                    }
+                    
+
+                    stmt.setString(1, email);
+                    stmt.setInt(2, pass2);
+                    ResultSet res = stmt.executeQuery();
+                    //check est vrai si la requete retourne 1 resultat faux sinon
+                    check = res.next();
+
+                    if (check){
+                            HttpSession session = request.getSession(true);
+                            session.setAttribute("userName", email);
+                    }
+                    else{
+                        request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
+                    }
+                } 
+                
+
         }
         
         /**
