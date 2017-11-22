@@ -7,6 +7,10 @@ package servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import static java.lang.System.out;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,6 +21,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
 import model.DAO;
 import model.DataSourceFactory;
 import model.DiscountCode;
@@ -27,6 +33,17 @@ import model.DiscountCode;
  */
 @WebServlet(name = "login", urlPatterns = {"/login"})
 public class Login extends HttpServlet {
+    
+    
+    //private final DataSource myDataSource;
+    /**
+	 * Construit le AO avec sa source de données
+	 * @param dataSource la source de données à utiliser
+	 */
+	//public Login(DataSource dataSource) {
+	//	this.myDataSource = dataSource;
+	//}
+        
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -43,60 +60,66 @@ public class Login extends HttpServlet {
             String product = request.getParameter("product");
             String price = request.getParameter("price");
             
-        try (PrintWriter out = response.getWriter()) {
-            DAO dao = new DAO(DataSourceFactory.getDataSource());
-                    
+            //Quelle action a appellée le service ?
+            String action = request.getParameter("action");
+            if (action != null){
+                switch (action) {
+                    case "login":
+                        DAO dao = new DAO(DataSourceFactory.getDataSource());
+                        dao.checkUser(request);
+                        break;
+                    case "logout":
+                        doLogout(request);
+                        break;
+                            
+                }
+            }
+                 
+            //On cherche a redirigé l'utilisateur 
+            String userName = findUserInSession(request);
+            String jspView;
             
-            //On récupère les enregistrements de la table de PRODUCTS
-            request.setAttribute("products", dao.allProducts());
-            
-            //On recupère les données saisies
-            String email = request.getParameter("email");         
-            String pass = request.getParameter("pass");
-           
-            //on vérifie la presence des paramètres
-            if(email==null || pass==null){
-                RequestDispatcher rs = request.getRequestDispatcher("index.html");
-                rs.include(request, response);
+            //On choisi la page en fonction du statut de l'utilisateur 
+                        
+            if (userName == null){
+                jspView = "login.jsp";
+                //out.println("testici");
+                //On redirige vers cette page 
+                request.getRequestDispatcher(jspView).forward(request, response);
             }
             
-            //Si les parametres sont définis on regarde leur validité        
-            else{           
-                //On verifie que le mot de passe peut etre parsé
-                if(pass.matches("[0-9]+")){
-                    int pass2 = Integer.parseInt(request.getParameter("pass"));
-                    out.println(pass2);
-                    //si oui on verifie:
-                    if(dao.checkUser(email, pass2)){
-                        RequestDispatcher rs = request.getRequestDispatcher("Clients.jsp");
-                        rs.forward(request, response);
-                    }
-                    //Les informations sont fausses
-                    else{
-                        out.println("Identifiant ou mot de passe incorrect");
-                        RequestDispatcher rs = request.getRequestDispatcher("index.html");
-                        rs.include(request, response);
-                    }
-                } 
-                //Le mot de passe n'est pas du bon format
-                else{
-                     if(email=="admin" && pass=="master") {
-                        out.println("Connexion administrateur");
-                        RequestDispatcher rs = request.getRequestDispatcher("Admin.jsp");
-                        rs.forward(request, response);
-                }
-                     else{
-                          out.println("Identifiant ou mot de passe incorrect");
-                          RequestDispatcher rs = request.getRequestDispatcher("index.html");
-                          rs.include(request, response);
+            else{
+                jspView = "Clients.jsp";
+                try (PrintWriter out = response.getWriter()) {
+                    DAO dao = new DAO(DataSourceFactory.getDataSource());                         
+                    //On récupère les enregistrements de la table de PRODUCTS
+                    request.setAttribute("products", dao.allProducts());
+                    //On redirige vers cette page 
+                    request.getRequestDispatcher(jspView).forward(request, response);
                 }
             }
             
-                  
-           
+            
+            
+             
         }
-    }
-    }
+ 
+            
+	private void doLogout(HttpServletRequest request) {
+		// On termine la session
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
+	}
+
+	private String findUserInSession(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		return (session == null) ? null : (String) session.getAttribute("userName");
+	}
+    
+
+    
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

@@ -12,7 +12,11 @@
 		<%--  On montre un éventuel message d'erreur --%>
 		<div><h4>${message}</h4></div>
                 
-                <div><p>Utilisateur : ${utilisateur}</p></div>
+                <div><p>Utilisateur : ${userName}</p></div>
+                
+                <form action="<c:url value="/"/>" method="POST"> 
+			<input type='submit' name='action' value='logout'>
+		</form>
                 
                 <div>
                 <h3>Mon panier </h3>
