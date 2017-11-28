@@ -12,7 +12,6 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import model.DAO;
 import model.DataSourceFactory;
-import model.DiscountCode;
 import model.ProductEntity;
 import org.apache.derby.tools.ij;
 
@@ -38,8 +37,7 @@ public class ApplicationListener implements ServletContextListener {
 		boolean result = false;
 
 		DAO dao = new DAO(DataSourceFactory.getDataSource());
-		try {
-			List<DiscountCode> allCodes = dao.allCodes();
+		try {			
 			Logger.getLogger("login").log(Level.INFO, "Database already exists");
                         List<ProductEntity> allProducts = dao.allProducts();
 			Logger.getLogger("DiscountEditor").log(Level.INFO, "Database already exists");

@@ -13,7 +13,7 @@
         <title>Login</title>
     </head>
     <body>
-        <h1>Ici on tente de se connecter avecles variables de sessions</h1>
+        <h1>Espace de connexion</h1>
         
         <%--
 	La servlet fait : request.setAttribute("errorMessage", "Login/Password incorrect");

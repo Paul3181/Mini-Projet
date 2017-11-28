@@ -1,5 +1,6 @@
 package model;
 
+import static java.lang.System.out;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,65 +25,6 @@ public class DAO {
 		this.myDataSource = dataSource;
 	}
 
-	/**
-	 * Contenu de la table DISCOUNT_CODE
-	 * @return Liste des discount codes
-	 * @throws SQLException renvoyées par JDBC
-	 */
-	public List<DiscountCode> allCodes() throws SQLException {
-
-		List<DiscountCode> result = new LinkedList<>();
-
-		String sql = "SELECT * FROM DISCOUNT_CODE ORDER BY DISCOUNT_CODE";
-		try (Connection connection = myDataSource.getConnection(); 
-		     PreparedStatement stmt = connection.prepareStatement(sql)) {
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next()) {
-				String id = rs.getString("DISCOUNT_CODE");
-				float rate = rs.getFloat("RATE");
-				DiscountCode c = new DiscountCode(id, rate);
-				result.add(c);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Ajout d'un enregistrement dans la table DISCOUNT_CODE
-	 * @param code le code (non null)
-	 * @param rate le taux (positive or 0)
-	 * @return 1 si succès, 0 sinon
-	 * @throws SQLException renvoyées par JDBC
-	 */
-	public int addDiscountCode(String code, float rate) throws SQLException {
-		int result = 0;
-		String sql = "INSERT INTO DISCOUNT_CODE VALUES (?, ?)";
-		try (Connection connection = myDataSource.getConnection(); 
-		     PreparedStatement stmt = connection.prepareStatement(sql)) {
-			stmt.setString(1, code);
-			stmt.setFloat(2, rate);
-			result = stmt.executeUpdate();
-		}
-		return result;
-	}
-
-		
-	/**
-	 * Supprime un enregistrement dans la table DISCOUNT_CODE
-	 * @param code la clé de l'enregistrement à supprimer
-	 * @return le nombre d'enregistrements supprimés (1 ou 0)
-	 * @throws java.sql.SQLException renvoyées par JDBC
-	 **/
-	public int deleteDiscountCode(String code) throws SQLException {
-		int result = 0;
-		String sql = "DELETE FROM DISCOUNT_CODE WHERE DISCOUNT_CODE = ?";
-		try (Connection connection = myDataSource.getConnection(); 
-		     PreparedStatement stmt = connection.prepareStatement(sql)) {
-			stmt.setString(1, code);
-			result = stmt.executeUpdate();
-		}
-		return result;
-	}
         
         /**
          * Methode permettant de valider ou non les informations de connexion
@@ -94,55 +36,45 @@ public class DAO {
          */
         public void checkUser(HttpServletRequest request) throws SQLException{   
             
-   
                 String sql = "SELECT * FROM CUSTOMER WHERE EMAIL=? AND CUSTOMER_ID=?";
-                
-                try (Connection connection = myDataSource.getConnection(); 
-                         PreparedStatement stmt = connection.prepareStatement(sql)) {
-                    boolean check = false;
-                    //On recupere les parametres
-                    String email = request.getParameter("email");
-                    String pass = request.getParameter("pass");
-                    int pass2 = 0;
-                    //On verifie la validité
-                    
-                    //parametres incomplet
-                    if(email==null || pass==null){
-                        request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
-                    }
-                    
-                    //on cast le mot de passe si on peut
-                    if(pass.matches("[0-9]+")){
-                        pass2 = Integer.parseInt(pass);
-                    }
-                    //sinon on test si c'est un admin
-                    else{
-                        if(email=="admin" && pass=="master") {
-                            HttpSession session = request.getSession(true);
-                            session.setAttribute("userName", email);
+                String email = request.getParameter("email");
+                String pass = request.getParameter("pass");
+                boolean admin = false;
+     
+                //on teste si c'est un admin
+                if(email.equals("admin") && pass.equals("master")) {
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute("userName", email);
+                }
+                else{
+                    try (Connection connection = myDataSource.getConnection(); 
+                        PreparedStatement stmt = connection.prepareStatement(sql)) {
+                        boolean check = false;
+                        int pass2 = 0;
+    
+                        //on cast le mot de passe si on peut et on test
+                        if(pass.matches("[0-9]+")){
+                            pass2 = Integer.parseInt(pass);
+                            stmt.setString(1, email);
+                            stmt.setInt(2, pass2);
+                            ResultSet res = stmt.executeQuery();
+                            //check est vrai si la requete retourne 1 resultat faux sinon
+                            check = res.next();
+
+                            if (check){
+                                    HttpSession session = request.getSession(true);
+                                    session.setAttribute("userName", email);
+                            }
+                            else{
+                                request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
+                            }
                         }
+                        //sinon mauvais mdp
                         else{
                             request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
-                        }
-                    }
-                    
-
-                    stmt.setString(1, email);
-                    stmt.setInt(2, pass2);
-                    ResultSet res = stmt.executeQuery();
-                    //check est vrai si la requete retourne 1 resultat faux sinon
-                    check = res.next();
-
-                    if (check){
-                            HttpSession session = request.getSession(true);
-                            session.setAttribute("userName", email);
-                    }
-                    else{
-                        request.setAttribute("errorMessage", "Identifiant ou mot de passe incorrect!");
-                    }
-                } 
-                
-
+                        }   
+                    }         
+                }                 
         }
         
         /**
@@ -166,8 +98,7 @@ public class DAO {
 			}
 		}
 		return result;
-	}
-                
+	}  
 
 
 }
