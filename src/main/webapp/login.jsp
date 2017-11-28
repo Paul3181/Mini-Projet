@@ -10,6 +10,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" media="screen" href="css/feuille.css" />
         <title>Login</title>
     </head>
     <body>
@@ -22,11 +23,10 @@
 	<div style="color:red">${errorMessage}</div>
         
         <form action="<c:url value="/" />" method="POST">
-                Identifiant:<input type="text" name="email" ><br>
-                Mot de passe:<input type="text" name="pass" ><br>
-                <input type='submit' name='action' value='login'>
+            <label for="email">Identifiant:</label><input type="text" name="email" ><br>
+            <label for="pass">Mot de passe:</label><input type="password" name="pass" ><br>
+            <input type='submit' name='action' value='login'>
         </form>
 
-        
     </body>
 </html>

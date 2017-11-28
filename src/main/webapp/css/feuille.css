@@ -1,0 +1,23 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 28 nov. 2017, 19:45:41
+    Author     : pauld
+*/
+
+
+label
+{
+    display: block; /* La balise devient de type block. */
+    width: 150px; /* Cette largeur sert d’exemple, vous pouvez la modifier si vous voulez. */
+}
+form 
+{
+    background-color:#FAFAFA;
+    padding:10px;
+    width:280px;
+    margin: 0 auto; 
+ }
