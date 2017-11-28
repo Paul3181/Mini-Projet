@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import model.DAO;
 import model.DataSourceFactory;
-import model.DiscountCode;
+
 
 /**
  *
@@ -80,18 +80,25 @@ public class Login extends HttpServlet {
             String jspView;
             
             //On choisi la page en fonction du statut de l'utilisateur 
-                        
+                      
             if (userName == null){
                 jspView = "login.jsp";
-                //out.println("testici");
+                
                 //On redirige vers cette page 
                 request.getRequestDispatcher(jspView).forward(request, response);
             }
             
+            if (userName.equals("admin")){
+                jspView = "admin.jsp";
+                //On redirige vers cette page 
+                request.getRequestDispatcher(jspView).forward(request, response);
+            }
+            
+                
             else{
-                jspView = "Clients.jsp";
+                jspView = "client.jsp";
                 try (PrintWriter out = response.getWriter()) {
-                    DAO dao = new DAO(DataSourceFactory.getDataSource());                         
+                    DAO dao = new DAO(DataSourceFactory.getDataSource());   
                     //On récupère les enregistrements de la table de PRODUCTS
                     request.setAttribute("products", dao.allProducts());
                     //On redirige vers cette page 
