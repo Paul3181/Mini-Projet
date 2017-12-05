@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +26,8 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import model.DAO;
 import model.DataSourceFactory;
+import model.ProductEntity;
+import model.PurchaseEntity;
 
 
 /**
@@ -59,6 +62,23 @@ public class Login extends HttpServlet {
             response.setContentType("text/html;charset=UTF-8");
             String product = request.getParameter("product");
             String price = request.getParameter("price");
+            String qte = request.getParameter("qte");
+            String rate = request.getParameter("rate");
+                
+            String num = request.getParameter("num");
+            String customerP = request.getParameter("customerP");
+            String sales = request.getParameter("sales");
+            String shipping = request.getParameter("shipping");
+            String company = request.getParameter("company");
+                
+            String numO = request.getParameter("numO");
+            String productO = request.getParameter("productO");
+            String priceO = request.getParameter("priceO");
+            String quantityO = request.getParameter("quantityO");
+            String salesO = request.getParameter("salesO");
+            String shippingO = request.getParameter("shippingO");
+            String companyO = request.getParameter("companyO");
+            String customerO = request.getParameter("customerO");
             
             //Quelle action a appellée le service ?
             String action = request.getParameter("action");
@@ -98,9 +118,80 @@ public class Login extends HttpServlet {
             else{
                 jspView = "client.jsp";
                 try (PrintWriter out = response.getWriter()) {
-                    DAO dao = new DAO(DataSourceFactory.getDataSource());   
-                    //On récupère les enregistrements de la table de PRODUCTS
-                    request.setAttribute("products", dao.allProducts());
+                    DAO dao = new DAO(DataSourceFactory.getDataSource()); 
+                    
+                    // create table
+                    dao.createTable();
+                    //dao.deleteTable();
+                    
+                    // Id du customer
+                    int customer = dao.customerId(userName);
+                    
+                    List<String> categories = dao.existingCategory();
+                    String category = request.getParameter("category");
+                    // On n'a pas forcément le paramètre
+                    if (null == category) {
+                        category = categories.get(1);
+                    }
+                        
+                    List<ProductEntity> products = dao.productsInCategory(category);
+                    request.setAttribute("products", products);
+                    request.setAttribute("existingCategories", categories);
+                    request.setAttribute("orders", dao.allOrders(customer));
+                    request.setAttribute("selectedCategory", category);
+                    //request.setAttribute("orders", dao.allOrders());
+                            
+                    switch (action) {
+                        case "Add": // Requête d'ajout (vient du formulaire de saisie)
+                            String product1 = request.getParameter("product1");
+                            String price1 = request.getParameter("price1");
+                            String quantity1 = request.getParameter("quantity1");
+                            String qte1 = request.getParameter("qte1");
+                            PurchaseEntity purchase = dao.allPurchase(customer, product1);
+                                
+                            float price2 = Float.parseFloat(price1);
+                            int quantity2 = Integer.parseInt(quantity1);
+                            int qte2 = Integer.parseInt(qte1);
+                            
+                            try{
+                                int num1 = purchase.getNum();
+                                int customer1 = purchase.getCustomerP();
+                                String sales1 = purchase.getSales();
+                                String shipping1 = purchase.getShipping();
+                                String company1 = purchase.getCompany();
+                                if(quantity2<=qte2){
+                                    dao.insert(num1, product1, price2, quantity2, sales1, shipping1, company1, customer1);
+                                }else{
+                                    request.setAttribute("message3", "Quantity not available !");
+                                }
+                                request.setAttribute("orders", dao.allOrders(customer));
+                            }catch(NullPointerException e){
+                                request.setAttribute("message2", "Impossible to add !");
+                                request.setAttribute("orders", dao.allOrders(customer));
+                            }
+                            break;
+                            
+                        case "Delete": // Requête de suppression (vient du lien hypertexte)
+                            String numD = request.getParameter("numD");
+                            System.out.println(numD);
+                            try {
+                                dao.deleteOrder(numD);
+                                request.setAttribute("message", "Order " + numD + " has been deleted");
+                                request.setAttribute("orders", dao.allOrders(customer));								
+                            } catch (SQLIntegrityConstraintViolationException e) {
+                            }
+                            break;
+                                
+                        case "Modify": // Requête de modification
+                            String qte3 = request.getParameter("qte3");
+                            String numD1 = request.getParameter("numD");
+                            int qte4 = Integer.parseInt(qte3);
+                            int numD2 = Integer.parseInt(numD1);
+                            dao.modifyQte(qte4, numD2);
+                            request.setAttribute("message4", "Quantity modified");
+                            request.setAttribute("orders", dao.allOrders(customer));
+                            break;
+			}
                     //On redirige vers cette page 
                     request.getRequestDispatcher(jspView).forward(request, response);
                 }
